@@ -1,13 +1,14 @@
 {
-  "name": "weather-intelligence-mcp",
+  "name": "github-project-health-mcp",
   "version": "0.1.0",
-  "description": "An MCP server for US weather forecasts and active alerts.",
+  "description": "An MCP server for evaluating the health and contribution readiness of GitHub projects.",
   "private": true,
   "type": "module",
   "scripts": {},
   "keywords": [
     "mcp",
-    "weather",
+    "github",
+    "project-health",
     "model-context-protocol"
   ],
   "author": "Ronit Pahuja",
