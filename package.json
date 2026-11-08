@@ -4,9 +4,11 @@
   "description": "An MCP server for evaluating the health and contribution readiness of GitHub projects.",
   "private": true,
   "type": "module",
+  "main": "build/index.js",
   "scripts": {
     "build": "tsc",
     "clean": "tsc --build --clean",
+    "start": "node build/index.js",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
