@@ -1,0 +1,70 @@
+export interface GitHubOwnerResponse {
+  readonly id: number;
+  readonly login: string;
+  readonly avatar_url: string;
+  readonly html_url: string;
+  readonly type: "User" | "Organization";
+}
+
+export interface GitHubLicenseResponse {
+  readonly key: string;
+  readonly name: string;
+  readonly spdx_id: string | null;
+  readonly url: string | null;
+}
+
+export interface GitHubRepositoryResponse {
+  readonly id: number;
+  readonly node_id: string;
+  readonly name: string;
+  readonly full_name: string;
+  readonly owner: GitHubOwnerResponse;
+  readonly private: boolean;
+  readonly html_url: string;
+  readonly description: string | null;
+  readonly fork: boolean;
+  readonly created_at: string;
+  readonly updated_at: string;
+  readonly pushed_at: string | null;
+  readonly homepage: string | null;
+  readonly size: number;
+  readonly stargazers_count: number;
+  readonly watchers_count: number;
+  readonly language: string | null;
+  readonly forks_count: number;
+  readonly open_issues_count: number;
+  readonly license: GitHubLicenseResponse | null;
+  readonly topics: readonly string[];
+  readonly visibility: "public" | "private" | "internal";
+  readonly default_branch: string;
+  readonly archived: boolean;
+  readonly disabled: boolean;
+  readonly has_issues: boolean;
+  readonly has_projects: boolean;
+  readonly has_wiki: boolean;
+  readonly has_pages: boolean;
+  readonly has_discussions: boolean;
+}
+
+export interface GitHubCommunityFileResponse {
+  readonly url: string;
+  readonly html_url: string | null;
+}
+
+export interface GitHubCommunityFilesResponse {
+  readonly code_of_conduct: GitHubCommunityFileResponse | null;
+  readonly contributing: GitHubCommunityFileResponse | null;
+  readonly issue_template: GitHubCommunityFileResponse | null;
+  readonly license: GitHubCommunityFileResponse | null;
+  readonly pull_request_template: GitHubCommunityFileResponse | null;
+  readonly readme: GitHubCommunityFileResponse | null;
+}
+
+export interface GitHubCommunityProfileResponse {
+  readonly health_percentage: number;
+  readonly description: string | null;
+  readonly documentation: string | null;
+  readonly files: GitHubCommunityFilesResponse;
+}
+
+export type GitHubLanguagesResponse = Readonly<Record<string, number>>;
