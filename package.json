@@ -1,0 +1,15 @@
+{
+  "name": "weather-intelligence-mcp",
+  "version": "0.1.0",
+  "description": "An MCP server for US weather forecasts and active alerts.",
+  "private": true,
+  "type": "module",
+  "scripts": {},
+  "keywords": [
+    "mcp",
+    "weather",
+    "model-context-protocol"
+  ],
+  "author": "Ronit Pahuja",
+  "license": "MIT"
+}
