@@ -9,6 +9,7 @@ import type {
   GitHubCommunityProfileResponse,
   GitHubIssueResponse,
   GitHubLanguagesResponse,
+  GitHubReleaseResponse,
   GitHubRepositoryResponse,
 } from "./types.js";
 
@@ -73,6 +74,17 @@ export class GitHubClient {
     const safePerPage = Math.min(100, Math.max(1, Math.trunc(perPage)));
     return this.#get(
       `repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/issues?state=open&sort=updated&direction=desc&per_page=${safePerPage}`,
+    );
+  }
+
+  async listReleases(
+    owner: string,
+    repository: string,
+    perPage = 30,
+  ): Promise<readonly GitHubReleaseResponse[]> {
+    const safePerPage = Math.min(100, Math.max(1, Math.trunc(perPage)));
+    return this.#get(
+      `repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/releases?per_page=${safePerPage}`,
     );
   }
 

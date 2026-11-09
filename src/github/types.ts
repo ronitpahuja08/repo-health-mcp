@@ -88,3 +88,15 @@ export interface GitHubIssueResponse {
   readonly labels: readonly (string | GitHubLabelResponse)[];
   readonly pull_request?: Readonly<Record<string, unknown>>;
 }
+
+export interface GitHubReleaseResponse {
+  readonly id: number;
+  readonly tag_name: string;
+  readonly name: string | null;
+  readonly html_url: string;
+  readonly draft: boolean;
+  readonly prerelease: boolean;
+  readonly created_at: string;
+  readonly published_at: string | null;
+  readonly body: string | null;
+}
