@@ -1,4 +1,5 @@
 import type { GitHubConfig } from "../config.js";
+import { TtlCache } from "../cache/ttl-cache.js";
 import {
   createGitHubApiError,
   readRateLimit,
@@ -12,17 +13,24 @@ import type {
 
 export type FetchImplementation = typeof globalThis.fetch;
 
+const DEFAULT_CACHE_TTL_MS = 60_000;
+
 export class GitHubClient {
   readonly #config: GitHubConfig;
   readonly #fetch: FetchImplementation;
+  readonly #cache: TtlCache<string, unknown>;
   #lastRateLimit: GitHubRateLimit | null = null;
 
   constructor(
     config: GitHubConfig,
     fetchImplementation: FetchImplementation = globalThis.fetch,
+    cache: TtlCache<string, unknown> = new TtlCache({
+      ttlMs: DEFAULT_CACHE_TTL_MS,
+    }),
   ) {
     this.#config = config;
     this.#fetch = fetchImplementation;
+    this.#cache = cache;
   }
 
   get lastRateLimit(): GitHubRateLimit | null {
@@ -57,6 +65,11 @@ export class GitHubClient {
   }
 
   async #get<T>(path: string): Promise<T> {
+    const cachedValue = this.#cache.get(path);
+    if (cachedValue !== undefined) {
+      return cachedValue as T;
+    }
+
     const baseUrl = `${this.#config.apiBaseUrl}/`;
     const url = new URL(path.replace(/^\/+/, ""), baseUrl);
     const headers = new Headers({
@@ -80,6 +93,8 @@ export class GitHubClient {
       throw await createGitHubApiError(response, this.#lastRateLimit);
     }
 
-    return (await response.json()) as T;
+    const value = (await response.json()) as T;
+    this.#cache.set(path, value);
+    return value;
   }
 }

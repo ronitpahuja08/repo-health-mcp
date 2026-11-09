@@ -136,7 +136,7 @@ src/
 - [x] Optional GitHub authentication
 - [x] Typed GitHub REST client
 - [x] API error and rate-limit handling
-- [ ] TTL response cache
+- [x] TTL response cache
 - [ ] Repository inspection tool
 - [ ] Explainable health analysis
 - [ ] Additional contribution and comparison tools
