@@ -68,3 +68,23 @@ export interface GitHubCommunityProfileResponse {
 }
 
 export type GitHubLanguagesResponse = Readonly<Record<string, number>>;
+
+export interface GitHubLabelResponse {
+  readonly id: number;
+  readonly name: string | null;
+  readonly color: string | null;
+  readonly description: string | null;
+}
+
+export interface GitHubIssueResponse {
+  readonly id: number;
+  readonly number: number;
+  readonly title: string;
+  readonly html_url: string;
+  readonly state: "open" | "closed";
+  readonly created_at: string;
+  readonly updated_at: string;
+  readonly comments: number;
+  readonly labels: readonly (string | GitHubLabelResponse)[];
+  readonly pull_request?: Readonly<Record<string, unknown>>;
+}

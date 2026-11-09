@@ -7,6 +7,7 @@ import {
 } from "./errors.js";
 import type {
   GitHubCommunityProfileResponse,
+  GitHubIssueResponse,
   GitHubLanguagesResponse,
   GitHubRepositoryResponse,
 } from "./types.js";
@@ -61,6 +62,17 @@ export class GitHubClient {
   ): Promise<GitHubLanguagesResponse> {
     return this.#get(
       `repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/languages`,
+    );
+  }
+
+  async listOpenIssues(
+    owner: string,
+    repository: string,
+    perPage = 100,
+  ): Promise<readonly GitHubIssueResponse[]> {
+    const safePerPage = Math.min(100, Math.max(1, Math.trunc(perPage)));
+    return this.#get(
+      `repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/issues?state=open&sort=updated&direction=desc&per_page=${safePerPage}`,
     );
   }
 
