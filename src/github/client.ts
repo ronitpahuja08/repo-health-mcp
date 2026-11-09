@@ -7,6 +7,7 @@ import {
 } from "./errors.js";
 import type {
   GitHubCommunityProfileResponse,
+  GitHubCommitResponse,
   GitHubIssueResponse,
   GitHubLanguagesResponse,
   GitHubReleaseResponse,
@@ -85,6 +86,25 @@ export class GitHubClient {
     const safePerPage = Math.min(100, Math.max(1, Math.trunc(perPage)));
     return this.#get(
       `repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/releases?per_page=${safePerPage}`,
+    );
+  }
+
+  async listCommits(options: {
+    owner: string;
+    repository: string;
+    since: string;
+    perPage?: number;
+  }): Promise<readonly GitHubCommitResponse[]> {
+    const safePerPage = Math.min(
+      100,
+      Math.max(1, Math.trunc(options.perPage ?? 100)),
+    );
+    const query = new URLSearchParams({
+      since: options.since,
+      per_page: String(safePerPage),
+    });
+    return this.#get(
+      `repos/${encodeURIComponent(options.owner)}/${encodeURIComponent(options.repository)}/commits?${query.toString()}`,
     );
   }
 

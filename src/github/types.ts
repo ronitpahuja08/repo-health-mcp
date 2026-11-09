@@ -100,3 +100,20 @@ export interface GitHubReleaseResponse {
   readonly published_at: string | null;
   readonly body: string | null;
 }
+
+export interface GitHubCommitIdentityResponse {
+  readonly name: string;
+  readonly email: string;
+  readonly date: string;
+}
+
+export interface GitHubCommitResponse {
+  readonly sha: string;
+  readonly html_url: string;
+  readonly author: GitHubOwnerResponse | null;
+  readonly commit: {
+    readonly author: GitHubCommitIdentityResponse | null;
+    readonly committer: GitHubCommitIdentityResponse | null;
+    readonly message: string;
+  };
+}

@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/server";
 import { loadConfig } from "./config.js";
 import { GitHubClient } from "./github/client.js";
 import { registerAnalyzeProjectHealthTool } from "./tools/analyze-project-health.js";
+import { registerContributorActivityTool } from "./tools/analyze-contributor-activity.js";
 import { registerFindGoodFirstIssuesTool } from "./tools/find-good-first-issues.js";
 import { registerInspectRepositoryTool } from "./tools/inspect-repository.js";
 import { registerSummarizeReleasesTool } from "./tools/summarize-releases.js";
@@ -26,6 +27,7 @@ export function createServer(): McpServer {
   const githubClient = new GitHubClient(loadConfig().github);
   registerInspectRepositoryTool(server, githubClient);
   registerAnalyzeProjectHealthTool(server, githubClient);
+  registerContributorActivityTool(server, githubClient);
   registerFindGoodFirstIssuesTool(server, githubClient);
   registerSummarizeReleasesTool(server, githubClient);
 
