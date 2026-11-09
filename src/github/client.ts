@@ -1,4 +1,9 @@
 import type { GitHubConfig } from "../config.js";
+import {
+  createGitHubApiError,
+  readRateLimit,
+  type GitHubRateLimit,
+} from "./errors.js";
 import type {
   GitHubCommunityProfileResponse,
   GitHubLanguagesResponse,
@@ -10,6 +15,7 @@ export type FetchImplementation = typeof globalThis.fetch;
 export class GitHubClient {
   readonly #config: GitHubConfig;
   readonly #fetch: FetchImplementation;
+  #lastRateLimit: GitHubRateLimit | null = null;
 
   constructor(
     config: GitHubConfig,
@@ -17,6 +23,10 @@ export class GitHubClient {
   ) {
     this.#config = config;
     this.#fetch = fetchImplementation;
+  }
+
+  get lastRateLimit(): GitHubRateLimit | null {
+    return this.#lastRateLimit;
   }
 
   async getRepository(
@@ -64,8 +74,10 @@ export class GitHubClient {
       headers,
     });
 
+    this.#lastRateLimit = readRateLimit(response.headers);
+
     if (!response.ok) {
-      throw new Error(`GitHub API request failed with status ${response.status}`);
+      throw await createGitHubApiError(response, this.#lastRateLimit);
     }
 
     return (await response.json()) as T;
