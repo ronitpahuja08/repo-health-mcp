@@ -5,7 +5,7 @@ import { createServer } from "./server.js";
 const serverHandle = serveStdio(createServer, {
   onerror: (error) => {
     // stdout is reserved for MCP protocol messages when using stdio.
-    console.error("GitHub Project Health MCP server error:", error);
+    console.error("Repo Health MCP server error:", error);
   },
 });
 

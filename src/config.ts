@@ -1,5 +1,5 @@
 const DEFAULT_GITHUB_API_BASE_URL = "https://api.github.com";
-const DEFAULT_USER_AGENT = "github-project-health-mcp/0.1.0";
+const DEFAULT_USER_AGENT = "repo-health-mcp/0.1.0";
 
 export interface GitHubConfig {
   readonly apiBaseUrl: string;

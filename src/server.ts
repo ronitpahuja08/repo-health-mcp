@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/server";
 
-export const SERVER_NAME = "github-project-health";
+export const SERVER_NAME = "repo-health";
 export const SERVER_VERSION = "0.1.0";
 
 /**
@@ -11,7 +11,7 @@ export function createServer(): McpServer {
   return new McpServer({
     name: SERVER_NAME,
     version: SERVER_VERSION,
-    title: "GitHub Project Health",
+    title: "Repo Health MCP",
     description:
       "Evaluate GitHub repository maintenance, documentation, and contribution readiness.",
   });

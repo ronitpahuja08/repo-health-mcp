@@ -1,5 +1,5 @@
 {
-  "name": "github-project-health-mcp",
+  "name": "repo-health-mcp",
   "version": "0.1.0",
   "description": "An MCP server for evaluating the health and contribution readiness of GitHub projects.",
   "private": true,
