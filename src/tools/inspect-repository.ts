@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import type { GitHubClient } from "../github/client.js";
 
-const repositoryInputSchema = z.object({
+export const repositoryInputSchema = z.object({
   owner: z
     .string()
     .trim()
@@ -32,7 +32,7 @@ const rateLimitSchema = z
   })
   .nullable();
 
-const repositoryInspectionSchema = z.object({
+export const repositoryInspectionSchema = z.object({
   repository: z.object({
     fullName: z.string(),
     url: z.string(),
@@ -99,6 +99,60 @@ function formatInspection(inspection: RepositoryInspection): string {
   ].join("\n");
 }
 
+export async function inspectRepository(
+  githubClient: GitHubClient,
+  owner: string,
+  repository: string,
+): Promise<RepositoryInspection> {
+  const [details, community, languages] = await Promise.all([
+    githubClient.getRepository(owner, repository),
+    githubClient.getCommunityProfile(owner, repository),
+    githubClient.getLanguages(owner, repository),
+  ]);
+
+  return {
+    repository: {
+      fullName: details.full_name,
+      url: details.html_url,
+      description: details.description,
+      ownerType: details.owner.type,
+      visibility: details.visibility,
+      defaultBranch: details.default_branch,
+      primaryLanguage: details.language,
+      languages: { ...languages },
+      topics: [...details.topics],
+      sizeKb: details.size,
+    },
+    activity: {
+      createdAt: details.created_at,
+      updatedAt: details.updated_at,
+      pushedAt: details.pushed_at,
+      archived: details.archived,
+      disabled: details.disabled,
+    },
+    popularity: {
+      stars: details.stargazers_count,
+      watchers: details.watchers_count,
+      forks: details.forks_count,
+      openIssues: details.open_issues_count,
+    },
+    community: {
+      healthPercentage: community.health_percentage,
+      description: community.description,
+      documentation: community.documentation,
+      files: {
+        codeOfConduct: community.files.code_of_conduct !== null,
+        contributing: community.files.contributing !== null,
+        issueTemplate: community.files.issue_template !== null,
+        license: community.files.license !== null,
+        pullRequestTemplate: community.files.pull_request_template !== null,
+        readme: community.files.readme !== null,
+      },
+    },
+    rateLimit: githubClient.lastRateLimit,
+  };
+}
+
 export function registerInspectRepositoryTool(
   server: McpServer,
   githubClient: GitHubClient,
@@ -119,54 +173,11 @@ export function registerInspectRepositoryTool(
       },
     },
     async ({ owner, repository }) => {
-      const [details, community, languages] = await Promise.all([
-        githubClient.getRepository(owner, repository),
-        githubClient.getCommunityProfile(owner, repository),
-        githubClient.getLanguages(owner, repository),
-      ]);
-
-      const inspection: RepositoryInspection = {
-        repository: {
-          fullName: details.full_name,
-          url: details.html_url,
-          description: details.description,
-          ownerType: details.owner.type,
-          visibility: details.visibility,
-          defaultBranch: details.default_branch,
-          primaryLanguage: details.language,
-          languages: { ...languages },
-          topics: [...details.topics],
-          sizeKb: details.size,
-        },
-        activity: {
-          createdAt: details.created_at,
-          updatedAt: details.updated_at,
-          pushedAt: details.pushed_at,
-          archived: details.archived,
-          disabled: details.disabled,
-        },
-        popularity: {
-          stars: details.stargazers_count,
-          watchers: details.watchers_count,
-          forks: details.forks_count,
-          openIssues: details.open_issues_count,
-        },
-        community: {
-          healthPercentage: community.health_percentage,
-          description: community.description,
-          documentation: community.documentation,
-          files: {
-            codeOfConduct: community.files.code_of_conduct !== null,
-            contributing: community.files.contributing !== null,
-            issueTemplate: community.files.issue_template !== null,
-            license: community.files.license !== null,
-            pullRequestTemplate:
-              community.files.pull_request_template !== null,
-            readme: community.files.readme !== null,
-          },
-        },
-        rateLimit: githubClient.lastRateLimit,
-      };
+      const inspection = await inspectRepository(
+        githubClient,
+        owner,
+        repository,
+      );
 
       return {
         content: [{ type: "text", text: formatInspection(inspection) }],

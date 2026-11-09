@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/server";
 
 import { loadConfig } from "./config.js";
 import { GitHubClient } from "./github/client.js";
+import { registerAnalyzeProjectHealthTool } from "./tools/analyze-project-health.js";
 import { registerInspectRepositoryTool } from "./tools/inspect-repository.js";
 
 export const SERVER_NAME = "repo-health";
@@ -22,6 +23,7 @@ export function createServer(): McpServer {
 
   const githubClient = new GitHubClient(loadConfig().github);
   registerInspectRepositoryTool(server, githubClient);
+  registerAnalyzeProjectHealthTool(server, githubClient);
 
   return server;
 }
