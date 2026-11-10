@@ -1,12 +1,14 @@
+<!-- markdownlint-disable MD013 -->
+
 # Repo Health MCP
 
 Repo Health MCP is a read-only Model Context Protocol server that helps an MCP client inspect a GitHub repository, explain its maintenance health, and assess how approachable it is for new contributors.
 
-Instead of returning an unexplained score, the finished server will expose the evidence behind its assessment: recent activity, releases, issue maintenance, contributor participation, documentation, licensing, and community files.
+Instead of returning an unexplained score, the server exposes the evidence behind its assessment: recent activity, releases, issue maintenance, contributor participation, documentation, licensing, and community files.
 
-> **Project status:** active development. The MCP transport, configuration layer, typed GitHub client, authentication support, and rate-limit handling are implemented. Repository analysis tools are being added incrementally.
+> **Project status:** feature-complete initial release with seven tools, three resource templates, two reusable prompts, automated tests, and continuous integration.
 
-## Planned capabilities
+## Capabilities
 
 ### Tools
 
@@ -20,15 +22,14 @@ Instead of returning an unexplained score, the finished server will expose the e
 
 ### Resources
 
-- `github://repository/{owner}/{repo}/health`
-- `github://repository/{owner}/{repo}/releases`
-- `github://repository/{owner}/{repo}/contributions`
+- `repo-health://{owner}/{repository}` — complete health report as JSON.
+- `repo-health://{owner}/{repository}/releases` — five recent stable releases and cadence.
+- `repo-health://{owner}/{repository}/contributors` — 90-day contributor activity.
 
 ### Prompts
 
-- Evaluate an open-source project before adopting it.
-- Prepare a contribution plan for a repository.
-- Generate a project-health report from collected evidence.
+- `evaluate_project` — produce an evidence-based audit with an overall, maintenance, community, or contributor focus.
+- `compare_project_health` — compare two projects with the same health model and explain the trade-offs.
 
 ## How it works
 
@@ -46,7 +47,7 @@ The server runs locally over stdio. It sends GitHub REST requests using an optio
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 22 or newer
 - npm
 - An MCP-compatible client or the MCP Inspector
 - Optional GitHub token for higher API limits and access to repositories your token can read
@@ -103,23 +104,97 @@ Build the project first, then point an MCP client at the generated entry point u
 ## Development
 
 ```bash
+npm test
 npm run typecheck
 npm run build
 ```
 
-The project uses strict TypeScript settings, including unchecked-index and exact-optional-property checks. GitHub responses are represented by explicit interfaces, and API errors preserve rate-limit information for actionable MCP responses.
+Use `npm run test:watch` during development. The project uses strict TypeScript settings, including unchecked-index and exact-optional-property checks. GitHub responses are represented by explicit interfaces, and API errors preserve rate-limit information for actionable MCP responses.
+
+## MCP Inspector demo
+
+Build the server before running the Inspector CLI examples:
+
+```bash
+npm run build
+```
+
+List the advertised tools and validate their schemas:
+
+```bash
+npx --yes @modelcontextprotocol/inspector --cli node build/index.js --method tools/list --strict
+```
+
+Run a health analysis against this repository:
+
+```bash
+npx --yes @modelcontextprotocol/inspector --cli node build/index.js --method tools/call --tool-name analyze_project_health --tool-args-json '{"owner":"ronitpahuja08","repository":"repo-health-mcp"}'
+```
+
+Check whether a repository is ready for outside contributors:
+
+```bash
+npx --yes @modelcontextprotocol/inspector --cli node build/index.js --method tools/call --tool-name check_repository_readiness --tool-args-json '{"owner":"modelcontextprotocol","repository":"typescript-sdk"}'
+```
+
+Discover and read resources:
+
+```bash
+npx --yes @modelcontextprotocol/inspector --cli node build/index.js --method resources/templates/list
+npx --yes @modelcontextprotocol/inspector --cli node build/index.js --method resources/read --uri "repo-health://ronitpahuja08/repo-health-mcp"
+```
+
+Render a reusable project-evaluation prompt:
+
+```bash
+npx --yes @modelcontextprotocol/inspector --cli node build/index.js --method prompts/get --prompt-name evaluate_project --prompt-args owner=ronitpahuja08 repository=repo-health-mcp focus=community
+```
+
+The Inspector web interface is also available:
+
+```bash
+npx --yes @modelcontextprotocol/inspector node build/index.js
+```
+
+## Troubleshooting
+
+### `GITHUB_TOKEN` is ignored
+
+Environment variables must be set in the process that launches the server. Restart the MCP client after changing its configuration. The token needs read access to any private repository being inspected; public-only use does not require a token.
+
+### GitHub returns `403` or `429`
+
+The server preserves GitHub's rate-limit details in its error. Wait until the reported reset time or configure `GITHUB_TOKEN` for a higher authenticated allowance. Repeated identical reads are cached briefly to avoid unnecessary API requests.
+
+### The client reports invalid JSON or a closed stdio connection
+
+Run `npm run build` again and confirm the client points to the absolute `build/index.js` path. Do not add normal logging to standard output: stdout is reserved for MCP messages. Send diagnostics to `console.error` instead.
+
+### A Windows path does not launch
+
+Use an absolute path with forward slashes in JSON, for example `C:/projects/repo-health-mcp/build/index.js`. Alternatively, escape every backslash as `\\`.
+
+### Inspector cannot find a tool, resource, or prompt
+
+Rebuild before launching the Inspector. Then use `tools/list`, `resources/templates/list`, or `prompts/list` to confirm what the running process advertises. An already-running MCP process does not automatically reload source changes.
 
 ## Current structure
 
 ```text
 src/
+├── analysis/          # Explainable health scoring
+├── cache/             # Typed TTL response cache
 ├── config.ts          # Environment and GitHub authentication configuration
 ├── github/
 │   ├── client.ts      # Typed GitHub REST client
 │   ├── errors.ts      # API and rate-limit errors
 │   └── types.ts       # GitHub response contracts
 ├── index.ts           # stdio process entry point
-└── server.ts          # MCP server factory
+├── prompts/           # Reusable MCP evaluation workflows
+├── resources/         # Dynamic health and activity resources
+├── server.ts          # MCP server factory
+└── tools/             # Repository inspection and analysis tools
+tests/                 # Unit, client, and MCP capability tests
 ```
 
 ## Design principles
@@ -137,9 +212,9 @@ src/
 - [x] Typed GitHub REST client
 - [x] API error and rate-limit handling
 - [x] TTL response cache
-- [ ] Repository inspection tool
-- [ ] Explainable health analysis
-- [ ] Additional contribution and comparison tools
-- [ ] Resources and reusable prompts
-- [ ] Automated tests and continuous integration
-- [ ] MCP Inspector examples and demo assets
+- [x] Repository inspection tool
+- [x] Explainable health analysis
+- [x] Contribution, release, comparison, and readiness tools
+- [x] Dynamic resources and reusable prompts
+- [x] Automated tests and continuous integration
+- [x] MCP Inspector demo and troubleshooting guide
