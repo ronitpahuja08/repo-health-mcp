@@ -105,6 +105,31 @@ export function summarizeReleases(options: {
   };
 }
 
+export async function getReleaseSummary(
+  githubClient: GitHubClient,
+  options: {
+    owner: string;
+    repository: string;
+    limit?: number;
+    includePrereleases?: boolean;
+  },
+): Promise<ReleaseSummary> {
+  const limit = options.limit ?? 5;
+  const includePrereleases = options.includePrereleases ?? false;
+  const releases = await githubClient.listReleases(
+    options.owner,
+    options.repository,
+    Math.max(30, limit),
+  );
+
+  return summarizeReleases({
+    repository: `${options.owner}/${options.repository}`,
+    releases,
+    limit,
+    includePrereleases,
+  });
+}
+
 function formatSummary(summary: ReleaseSummary): string {
   if (summary.releases.length === 0) {
     return `No published releases matching the requested criteria were found for ${summary.repository}.`;
@@ -141,14 +166,9 @@ export function registerSummarizeReleasesTool(
       },
     },
     async ({ owner, repository, limit, includePrereleases }) => {
-      const releases = await githubClient.listReleases(
+      const summary = await getReleaseSummary(githubClient, {
         owner,
         repository,
-        Math.max(30, limit),
-      );
-      const summary = summarizeReleases({
-        repository: `${owner}/${repository}`,
-        releases,
         limit,
         includePrereleases,
       });

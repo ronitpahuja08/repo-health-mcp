@@ -119,6 +119,35 @@ export function analyzeContributorActivity(options: {
   };
 }
 
+export async function getContributorActivity(
+  githubClient: GitHubClient,
+  options: {
+    owner: string;
+    repository: string;
+    lookbackDays?: number;
+    contributorLimit?: number;
+  },
+): Promise<ContributorActivity> {
+  const lookbackDays = options.lookbackDays ?? 90;
+  const contributorLimit = options.contributorLimit ?? 10;
+  const since = new Date(
+    Date.now() - lookbackDays * 86_400_000,
+  ).toISOString();
+  const commits = await githubClient.listCommits({
+    owner: options.owner,
+    repository: options.repository,
+    since,
+  });
+
+  return analyzeContributorActivity({
+    repository: `${options.owner}/${options.repository}`,
+    commits,
+    lookbackDays,
+    since,
+    contributorLimit,
+  });
+}
+
 function formatActivity(activity: ContributorActivity): string {
   const contributorLines = activity.contributors.map(
     (contributor) =>
@@ -159,19 +188,10 @@ export function registerContributorActivityTool(
       },
     },
     async ({ owner, repository, lookbackDays, contributorLimit }) => {
-      const since = new Date(
-        Date.now() - lookbackDays * 86_400_000,
-      ).toISOString();
-      const commits = await githubClient.listCommits({
+      const activity = await getContributorActivity(githubClient, {
         owner,
         repository,
-        since,
-      });
-      const activity = analyzeContributorActivity({
-        repository: `${owner}/${repository}`,
-        commits,
         lookbackDays,
-        since,
         contributorLimit,
       });
 

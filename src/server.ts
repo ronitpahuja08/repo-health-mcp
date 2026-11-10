@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/server";
 
 import { loadConfig } from "./config.js";
 import { GitHubClient } from "./github/client.js";
+import { registerRepositoryActivityResources } from "./resources/activity-resources.js";
 import { registerRepositoryHealthResource } from "./resources/health-resource.js";
 import { registerAnalyzeProjectHealthTool } from "./tools/analyze-project-health.js";
 import { registerContributorActivityTool } from "./tools/analyze-contributor-activity.js";
@@ -28,6 +29,7 @@ export function createServer(): McpServer {
   });
 
   const githubClient = new GitHubClient(loadConfig().github);
+  registerRepositoryActivityResources(server, githubClient);
   registerRepositoryHealthResource(server, githubClient);
   registerInspectRepositoryTool(server, githubClient);
   registerAnalyzeProjectHealthTool(server, githubClient);
