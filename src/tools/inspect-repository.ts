@@ -52,6 +52,12 @@ export const repositoryInspectionSchema = z.object({
     archived: z.boolean(),
     disabled: z.boolean(),
   }),
+  features: z.object({
+    issues: z.boolean(),
+    discussions: z.boolean(),
+    wiki: z.boolean(),
+    pages: z.boolean(),
+  }),
   popularity: z.object({
     stars: z.number().int().nonnegative(),
     watchers: z.number().int().nonnegative(),
@@ -129,6 +135,12 @@ export async function inspectRepository(
       pushedAt: details.pushed_at,
       archived: details.archived,
       disabled: details.disabled,
+    },
+    features: {
+      issues: details.has_issues,
+      discussions: details.has_discussions,
+      wiki: details.has_wiki,
+      pages: details.has_pages,
     },
     popularity: {
       stars: details.stargazers_count,
