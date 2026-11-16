@@ -54,6 +54,7 @@ describe("analyzeProjectHealth", () => {
     expect(analysis.score).toBe(100);
     expect(analysis.grade).toBe("excellent");
     expect(analysis.recommendations).toEqual([]);
+    expect(analysis.prioritizedRecommendations).toEqual([]);
     expect(analysis.generatedAt).toBe("2026-06-01T00:00:00.000Z");
   });
 
@@ -78,6 +79,16 @@ describe("analyzeProjectHealth", () => {
     );
     expect(analysis.recommendations).toContain(
       "Restore active maintenance or clearly document archival status.",
+    );
+    expect(analysis.prioritizedRecommendations).toEqual(
+      expect.arrayContaining([
+        {
+          priority: "high",
+          signal: "Repository is operational",
+          recommendation:
+            "Restore active maintenance or clearly document archival status.",
+        },
+      ]),
     );
   });
 });

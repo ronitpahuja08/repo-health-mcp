@@ -16,8 +16,8 @@ function formatHealthAnalysis(analysis: ProjectHealthAnalysis): string {
     (category) =>
       `- ${category.label}: ${category.score}/${category.maxScore}`,
   );
-  const recommendationLines = analysis.recommendations.map(
-    (recommendation) => `- ${recommendation}`,
+  const recommendationLines = analysis.prioritizedRecommendations.map(
+    ({ priority, recommendation }) => `- [${priority}] ${recommendation}`,
   );
 
   return [

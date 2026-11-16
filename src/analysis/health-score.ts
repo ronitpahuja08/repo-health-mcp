@@ -20,6 +20,12 @@ const healthCategorySchema = z.object({
   signals: z.array(healthSignalSchema),
 });
 
+const healthRecommendationSchema = z.object({
+  priority: z.enum(["high", "medium"]),
+  signal: z.string(),
+  recommendation: z.string(),
+});
+
 export const projectHealthAnalysisSchema = z.object({
   repository: z.object({
     fullName: z.string(),
@@ -32,11 +38,13 @@ export const projectHealthAnalysisSchema = z.object({
   categories: z.array(healthCategorySchema),
   strengths: z.array(z.string()),
   recommendations: z.array(z.string()),
+  prioritizedRecommendations: z.array(healthRecommendationSchema),
   generatedAt: z.string(),
 });
 
 export type HealthSignal = z.infer<typeof healthSignalSchema>;
 export type HealthCategory = z.infer<typeof healthCategorySchema>;
+export type HealthRecommendation = z.infer<typeof healthRecommendationSchema>;
 export type ProjectHealthAnalysis = z.infer<
   typeof projectHealthAnalysisSchema
 >;
@@ -308,6 +316,19 @@ export function analyzeProjectHealth(
   const recommendations = signals.flatMap((signal) =>
     signal.recommendation === null ? [] : [signal.recommendation],
   );
+  const prioritizedRecommendations: HealthRecommendation[] = signals.flatMap(
+    (signal) => {
+      if (signal.recommendation === null || signal.status === "pass") {
+        return [];
+      }
+
+      return [{
+        priority: signal.status === "fail" ? "high" : "medium",
+        signal: signal.label,
+        recommendation: signal.recommendation,
+      }];
+    },
+  );
 
   return {
     repository: {
@@ -321,6 +342,7 @@ export function analyzeProjectHealth(
     categories,
     strengths,
     recommendations,
+    prioritizedRecommendations,
     generatedAt: now.toISOString(),
   };
 }
